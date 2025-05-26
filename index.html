@@ -1,40 +1,361 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Sketch Interativo</title>
-    <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
-    <style>
-      body {
-        margin: 0;
-        font-family: sans-serif;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        background-color: #f0f0f0;
-      }
-      canvas {
-        border: 1px solid #ccc;
-        margin-top: 20px;
-      }
-      .controls {
-        margin-top: 10px;
-      }
-      button {
-        margin: 0 5px;
-        padding: 8px 16px;
-        font-size: 14px;
-        cursor: pointer;
-      }
-    </style>
-  </head>
-  <body>
-    <h2>Sketch com Controles</h2>
-    <div class="controls">
-      <button onclick="startSketch()">▶️ Play</button>
-      <button onclick="pauseSketch()">⏸️ Pause</button>
-      <button onclick="resetSketch()">🔁 Reset</button>
+<head>
+  <meta charset="UTF-8" />
+  <title>Sketch p5.js com Editor, Console e Notas</title>
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f0f0f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+    h2 {
+      margin: 10px;
+    }
+    #main {
+      display: flex;
+      flex: 1;
+      width: 100%;
+      max-width: 1200px;
+      gap: 10px;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+    #leftPanel, #rightPanel {
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+    #leftPanel {
+      flex: 1.2;
+      min-width: 350px;
+      max-width: 600px;
+      height: 100%;
+    }
+    #rightPanel {
+      flex: 1;
+      height: 100%;
+      max-width: 400px;
+    }
+    textarea {
+      width: 100%;
+      height: 300px;
+      font-family: monospace;
+      font-size: 14px;
+      resize: vertical;
+      box-sizing: border-box;
+    }
+    #canvasContainer {
+      margin-top: 10px;
+      display: flex;
+      justify-content: center;
+      border: 1px solid #ccc;
+      background: #fff;
+      border-radius: 5px;
+    }
+    #controls {
+      margin-top: 10px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+    button {
+      padding: 8px 16px;
+      cursor: pointer;
+      font-size: 14px;
+      border-radius: 4px;
+      border: 1px solid #333;
+      background: white;
+      transition: background-color 0.2s;
+    }
+    button:hover {
+      background: #eee;
+    }
+    #console {
+      background: #222;
+      color: #eee;
+      font-family: monospace;
+      font-size: 13px;
+      height: 150px;
+      overflow-y: auto;
+      padding: 5px;
+      border-radius: 4px;
+      white-space: pre-wrap;
+      margin-top: 10px;
+      flex: none;
+    }
+    /* Aba de notas */
+    #notesTabs {
+      display: flex;
+      border-bottom: 1px solid #ccc;
+      margin-bottom: 5px;
+    }
+    .noteTab {
+      padding: 6px 12px;
+      border: 1px solid #ccc;
+      border-bottom: none;
+      background: #eee;
+      cursor: pointer;
+      margin-right: 5px;
+      border-radius: 5px 5px 0 0;
+      user-select: none;
+      position: relative;
+    }
+    .noteTab.active {
+      background: white;
+      font-weight: bold;
+    }
+    .closeNote {
+      position: absolute;
+      right: 4px;
+      top: 2px;
+      font-weight: bold;
+      cursor: pointer;
+      color: #666;
+    }
+    .closeNote:hover {
+      color: red;
+    }
+    #notesArea {
+      flex: 1;
+      resize: vertical;
+      width: 100%;
+      font-family: monospace;
+      font-size: 14px;
+      padding: 8px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 0 0 5px 5px;
+      height: 150px;
+    }
+    #addNoteBtn {
+      margin-left: auto;
+      background: #4caf50;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #addNoteBtn:hover {
+      background: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <h2>Editor p5.js com Console e Notas</h2>
+  <div id="main">
+    <div id="leftPanel">
+      <label for="codeEditor"><b>Código do Sketch (JS)</b></label>
+      <textarea id="codeEditor"></textarea>
+      <div id="controls">
+        <button id="btnRun">▶️ Run</button>
+        <button id="btnPause">⏸️ Pause</button>
+        <button id="btnReset">🔁 Reset</button>
+      </div>
+      <div id="canvasContainer"></div>
+      <div id="console"></div>
     </div>
-    <script src="sketch.js"></script>
-  </body>
+    <div id="rightPanel">
+      <div id="notesTabs">
+        <button id="addNoteBtn">+ Nota</button>
+      </div>
+      <textarea id="notesArea" placeholder="Escreva suas anotações aqui..."></textarea>
+    </div>
+  </div>
+
+  <script>
+    // --- Setup variáveis ---
+    const codeEditor = document.getElementById('codeEditor');
+    const btnRun = document.getElementById('btnRun');
+    const btnPause = document.getElementById('btnPause');
+    const btnReset = document.getElementById('btnReset');
+    const canvasContainer = document.getElementById('canvasContainer');
+    const consoleDiv = document.getElementById('console');
+    const notesTabs = document.getElementById('notesTabs');
+    const notesArea = document.getElementById('notesArea');
+    const addNoteBtn = document.getElementById('addNoteBtn');
+
+    let p5Instance = null;
+    let paused = false;
+
+    // Notas armazenadas { id, title, content }
+    let notes = [];
+    let currentNoteId = null;
+
+    // Código inicial (seu sketch original simplificado)
+    const defaultCode = `let x = 0;
+function setup() {
+  createCanvas(400, 200);
+  x = 0;
+}
+function draw() {
+  if (!paused) {
+    background(240);
+    ellipse(x, height / 2, 50, 50);
+    x += 2;
+    if (x > width) x = 0;
+  }
+}
+`;
+
+    // Inicializar editor com código padrão
+    codeEditor.value = defaultCode;
+
+    // --- Função para limpar console ---
+    function clearConsole() {
+      consoleDiv.textContent = '';
+    }
+
+    // --- Capturar console.log e mostrar no consoleDiv ---
+    (function captureConsole() {
+      const oldLog = console.log;
+      console.log = function(...args) {
+        oldLog.apply(console, args);
+        consoleDiv.textContent += args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' ') + '\n';
+        consoleDiv.scrollTop = consoleDiv.scrollHeight;
+      };
+    })();
+
+    // --- Função para rodar o sketch a partir do código do editor ---
+    function runSketch() {
+      paused = false;
+      clearConsole();
+
+      // Se já tem instância, destrói ela pra reiniciar
+      if (p5Instance) {
+        p5Instance.remove();
+        p5Instance = null;
+      }
+
+      // Construir um novo sketch com o código do editor
+      try {
+        // Cria uma função construtora que recebe p (p5 instance)
+        const codeToEval = `
+          let paused = false;
+          ${codeEditor.value}
+        `;
+        // Usar o construtor de função para rodar no escopo do p5
+        const sketchFunc = new Function('p', `
+          ${codeToEval}
+          p.setup = setup;
+          p.draw = draw;
+        `);
+
+        // Instancia p5 com o sketchFunc
+        p5Instance = new p5(sketchFunc, canvasContainer);
+        console.log('Sketch rodando!');
+      } catch (e) {
+        console.log('Erro ao executar código:', e.message);
+      }
+    }
+
+    // --- Pausar o sketch ---
+    btnPause.onclick = () => {
+      if (p5Instance) {
+        paused = true;
+        p5Instance.noLoop();
+        console.log('Sketch pausado');
+      }
+    };
+
+    // --- Resetar (rodar de novo) ---
+    btnReset.onclick = () => {
+      runSketch();
+      console.log('Sketch resetado');
+    };
+
+    // --- Botão run ---
+    btnRun.onclick = () => {
+      runSketch();
+    };
+
+    // --- Gerenciar notas ---
+    function addNote() {
+      const newId = Date.now().toString();
+      const title = `Nota ${notes.length + 1}`;
+      const content = '';
+      notes.push({id: newId, title, content});
+      currentNoteId = newId;
+      renderNotesTabs();
+      renderNoteContent();
+    }
+
+    function renderNotesTabs() {
+      // Limpa todas as tabs (menos o botão)
+      notesTabs.querySelectorAll('.noteTab').forEach(tab => tab.remove());
+
+      // Cria tab pra cada nota
+      notes.forEach(note => {
+        const tab = document.createElement('button');
+        tab.className = 'noteTab';
+        if (note.id === currentNoteId) tab.classList.add('active');
+        tab.textContent = note.title;
+
+        // Botão fechar
+        const closeBtn = document.createElement('span');
+        closeBtn.textContent = '×';
+        closeBtn.className = 'closeNote';
+        closeBtn.onclick = (e) => {
+          e.stopPropagation();
+          deleteNote(note.id);
+        };
+        tab.appendChild(closeBtn);
+
+        tab.onclick = () => {
+          currentNoteId = note.id;
+          renderNotesTabs();
+          renderNoteContent();
+        };
+        notesTabs.insertBefore(tab, addNoteBtn);
+      });
+    }
+
+    function renderNoteContent() {
+      const note = notes.find(n => n.id === currentNoteId);
+      if (note) {
+        notesArea.value = note.content;
+      } else {
+        notesArea.value = '';
+      }
+    }
+
+    function deleteNote(id) {
+      notes = notes.filter(n => n.id !== id);
+      if (currentNoteId === id) {
+        currentNoteId = notes.length ? notes[0].id : null;
+      }
+      renderNotesTabs();
+      renderNoteContent();
+    }
+
+    // Salvar conteúdo da nota ao digitar
+    notesArea.addEventListener('input', () => {
+      const note = notes.find(n => n.id === currentNoteId);
+      if (note) {
+        note.content = notesArea.value;
+      }
+    });
+
+    // Botão adicionar nota
+    addNoteBtn.onclick = addNote;
+
+    // Inicializa com uma nota
+    addNote();
+
+    // Inicializa rodando o sketch
+    runSketch();
+  </script>
+</body>
 </html>
