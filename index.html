@@ -1,339 +1,333 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8" />
-<title>Sketch Interativo</title>
-<script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
-<style>
-  body {
-    margin: 0; 
-    font-family: sans-serif;
-    display: flex;
-    height: 100vh;
-    overflow: hidden;
-  }
-  #leftPanel {
-    width: 50%;
-    display: flex;
-    flex-direction: column;
-    padding: 10px;
-    box-sizing: border-box;
-    background: #fafafa;
-  }
-  #codeEditor {
-    flex: 1;
-    font-family: monospace;
-    font-size: 14px;
-    padding: 10px;
-    border: 1px solid #ccc;
-    resize: none;
-    background: #fff;
-    color: #333;
-    overflow: auto;
-  }
-  .controls {
-    margin: 8px 0;
-    display: flex;
-    gap: 8px;
-  }
-  button {
-    padding: 6px 12px;
-    font-size: 14px;
-    cursor: pointer;
-  }
-  #console {
-    height: 120px;
-    background: #222;
-    color: #eee;
-    font-family: monospace;
-    font-size: 13px;
-    padding: 6px;
-    overflow-y: auto;
-    border-radius: 4px;
-    margin-top: 8px;
-  }
-  #canvasContainer {
-    width: 50%;
-    background: #ddd;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-sizing: border-box;
-    padding: 10px;
-  }
-  canvas {
-    border: 1px solid #666;
-  }
-  #rightPanel {
-    width: 25%;
-    background: #f4f4f4;
-    border-left: 1px solid #ccc;
-    box-sizing: border-box;
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-  }
-  #notesTabs {
-    display: flex;
-    gap: 5px;
-    margin-bottom: 10px;
-    flex-wrap: wrap;
-  }
-  .noteTab {
-    background: #bbb;
-    padding: 4px 8px;
-    border-radius: 4px;
-    cursor: pointer;
-    user-select: none;
-  }
-  .noteTab.active {
-    background: #6a9ae2;
-    color: white;
-    font-weight: bold;
-  }
-  #notesArea {
-    flex: 1;
-    font-family: monospace;
-    font-size: 14px;
-    padding: 8px;
-    border: 1px solid #ccc;
-    resize: none;
-    background: white;
-    overflow: auto;
-  }
-  #addNoteBtn {
-    margin-top: 8px;
-    padding: 6px;
-    cursor: pointer;
-    background: #6a9ae2;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    font-weight: bold;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <title>Sketch com Notas e Controles</title>
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: monospace, monospace;
+      background: #f0f0f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px;
+    }
+
+    /* Abas */
+    .tabs {
+      display: flex;
+      margin-bottom: 10px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .tab {
+      background: #ddd;
+      padding: 8px 16px;
+      border: 1px solid #aaa;
+      border-bottom: none;
+      margin-right: 3px;
+      border-radius: 5px 5px 0 0;
+      font-weight: bold;
+    }
+    .tab.active {
+      background: white;
+      border-bottom: 1px solid white;
+    }
+
+    /* Conteúdo das notas */
+    .note-content {
+      width: 90vw;
+      max-width: 1280px;
+      height: 250px;
+      border: 1px solid #aaa;
+      background: white;
+      overflow: auto;
+      padding: 10px;
+      white-space: pre-wrap;
+      font-size: 14px;
+      line-height: 1.3em;
+      display: none;
+    }
+    .note-content.active {
+      display: block;
+    }
+
+    /* Canvas e controles */
+    #sketch-holder {
+      border: 1px solid #aaa;
+      margin-top: 20px;
+      width: 700px;
+      height: 400px;
+      background: white;
+    }
+
+    .controls {
+      margin-top: 15px;
+    }
+    button {
+      margin: 0 5px;
+      padding: 8px 16px;
+      font-size: 14px;
+      cursor: pointer;
+      border-radius: 5px;
+      border: 1px solid #888;
+      background: #eee;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #ddd;
+    }
+  </style>
 </head>
 <body>
 
-<div id="leftPanel">
-  <h3>Código do Sketch (JS)</h3>
-  <textarea id="codeEditor" spellcheck="false">
-// Exemplo padrão:
-let x = 0;
+  <h2>Sketch p5.js com Notas e Controles</h2>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="note1">Nota 1</div>
+    <div class="tab" data-tab="note2">Nota 2</div>
+    <div class="tab" data-tab="note3">Nota 3</div>
+  </div>
+
+  <pre id="note1" class="note-content active">
+// The Nature of Code
+// Daniel Shiffman
+// http://natureofcode.com
+
+class Emitter {
+  constructor(x, y) {
+    this.origin = createVector(x, y);
+    this.particles = [];
+  }
+
+  addParticle() {
+    this.particles.push(new Particle(this.origin.x, this.origin.y));
+  }
+
+  run() {
+    // Looping through backwards to delete
+    for (let i = this.particles.length - 1; i >= 0; i--) {
+      this.particles[i].run();
+      if (this.particles[i].isDead()) {
+        // Remove the particle
+        this.particles.splice(i, 1);
+      }
+    }
+
+    // Run every particle
+    // ES6 for..of loop
+    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of
+    // https://www.youtube.com/watch?v=Y8sMnRQYr3c
+    // for (let particle of this.particles) {
+    //   particle.run();
+    // }
+
+    // Filter removes any elements of the array that do not pass the test
+    // I am also using ES6 arrow snytax
+    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions
+    // https://www.youtube.com/watch?v=mrYMzpbFz18
+    // this.particles = this.particles.filter(particle => !particle.isDead());
+
+    // Without ES6 arrow code would look like:
+    // this.particles = this.particles.filter(function(particle) {
+    //   return !particle.isDead();
+    // });
+  }
+}
+  </pre>
+
+  <pre id="note2" class="note-content">
+// The Nature of Code
+// Daniel Shiffman
+// http://natureofcode.com
+
+let emitter;
 
 function setup() {
-  createCanvas(700, 400);
-  x = 0;
+  createCanvas(1280, 480);
+  emitter = new Emitter(width / 3, 50);
 }
 
 function draw() {
-  if (!paused) {
-    background(240);
-    ellipse(x, height / 2, 50, 50);
-    x += 2;
-    if (x > width) x = 0;
-  }
+  background(255,30);
+
+  // Apply gravity force to all Particles
+  let gravity = createVector(0, 0.1);
+  emitter.applyForce(gravity);
+
+  emitter.addParticle();
+  emitter.run();
 }
-  </textarea>
+  </pre>
+
+  <pre id="note3" class="note-content">
+// One ParticleSystem
+let emitter;
+
+//{!1} One repeller
+let repeller;
+
+function setup() {
+  createCanvas(640 , 240);
+  emitter = new Emitter(width / 2, 60);
+  repeller = new Repeller(width / 2, 160);
+}
+
+function draw() {
+  background(255);
+  emitter.addParticle();
+  // We’re applying a universal gravity.
+  let gravity = createVector(0, 0.1);
+  emitter.applyForce(gravity);
+  //{!1} Applying the repeller
+  emitter.applyRepeller(repeller);
+  emitter.run();
+
+  repeller.show();
+}
+  </pre>
+
   <div class="controls">
-    <button id="runBtn">▶️ Run</button>
-    <button id="pauseBtn">⏸️ Pause</button>
-    <button id="resetBtn">🔁 Reset</button>
+    <button onclick="startSketch()">▶️ Play</button>
+    <button onclick="pauseSketch()">⏸️ Pause</button>
+    <button onclick="resetSketch()">🔁 Reset</button>
   </div>
-  <div id="console"></div>
-</div>
 
-<div id="canvasContainer"></div>
+  <div id="sketch-holder"></div>
 
-<div id="rightPanel">
-  <h3>Notas</h3>
-  <div id="notesTabs"></div>
-  <textarea id="notesArea" spellcheck="false"></textarea>
-  <button id="addNoteBtn">+ Nova Nota</button>
-</div>
+  <script>
+    // Controle das abas
+    const tabs = document.querySelectorAll('.tab');
+    const notes = document.querySelectorAll('.note-content');
 
-<script>
-  // Variáveis globais
-  let p5Instance = null;
-  let paused = false;
-
-  const canvasContainer = document.getElementById('canvasContainer');
-  const codeEditor = document.getElementById('codeEditor');
-  const runBtn = document.getElementById('runBtn');
-  const pauseBtn = document.getElementById('pauseBtn');
-  const resetBtn = document.getElementById('resetBtn');
-  const consoleDiv = document.getElementById('console');
-
-  // Notas
-  const notesTabs = document.getElementById('notesTabs');
-  const notesArea = document.getElementById('notesArea');
-  const addNoteBtn = document.getElementById('addNoteBtn');
-  let notes = [];
-  let currentNote = null;
-
-  // Redireciona console.log para nosso consoleDiv
-  (function() {
-    const origLog = console.log;
-    console.log = function(...args) {
-      origLog.apply(console, args);
-      const msg = args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' ');
-      consoleDiv.innerText += msg + '\n';
-      consoleDiv.scrollTop = consoleDiv.scrollHeight;
-    };
-  })();
-
-  function clearConsole() {
-    consoleDiv.innerText = '';
-  }
-
-  // Função para substituir chamadas p5 para p.*
-  function transformCode(code) {
-    const p5Funcs = [
-      'createCanvas', 'background', 'ellipse', 'rect', 'line', 'fill', 'noFill', 'stroke', 'noStroke',
-      'noLoop', 'loop', 'text', 'textSize', 'textAlign', 'width', 'height',
-      'mouseX', 'mouseY', 'frameCount', 'random', 'floor', 'ceil', 'push', 'pop', 'translate', 'rotate'
-    ];
-
-    p5Funcs.forEach(fn => {
-      if (fn === 'width' || fn === 'height' || fn === 'mouseX' || fn === 'mouseY' || fn === 'frameCount') {
-        // propriedades e variáveis, substituir somente se não tiver p. na frente
-        code = code.replace(new RegExp(`([^\\.])\\b${fn}\\b`, 'g'), `$1p.${fn}`);
-      } else {
-        // funções
-        code = code.replace(new RegExp(`\\b${fn}\\(`, 'g'), `p.${fn}(`);
-      }
-    });
-    return code;
-  }
-
-  function runSketch() {
-    paused = false;
-    clearConsole();
-
-    if (p5Instance) {
-      p5Instance.remove();
-      p5Instance = null;
-    }
-
-    try {
-      let userCode = codeEditor.value;
-
-      userCode = transformCode(userCode);
-
-      const sketchFunc = new Function('p', `
-        let paused = false;
-        ${userCode}
-        p.setup = setup;
-        p.draw = draw;
-        p.keyPressed = typeof keyPressed === 'function' ? keyPressed : undefined;
-      `);
-
-      p5Instance = new p5(sketchFunc, canvasContainer);
-
-      console.log('Sketch rodando!');
-    } catch (e) {
-      console.log('Erro ao executar código:', e.message);
-    }
-  }
-
-  function pauseSketch() {
-    if (!p5Instance) return;
-    paused = true;
-    if (p5Instance.noLoop) p5Instance.noLoop();
-    console.log('Sketch pausado');
-  }
-
-  function resetSketch() {
-    if (!p5Instance) return;
-    paused = false;
-    // Remove e roda de novo
-    p5Instance.remove();
-    runSketch();
-    console.log('Sketch reiniciado');
-  }
-
-  // Controles
-  runBtn.onclick = () => {
-    paused = false;
-    runSketch();
-  };
-
-  pauseBtn.onclick = () => {
-    pauseSketch();
-  };
-
-  resetBtn.onclick = () => {
-    resetSketch();
-  };
-
-  // --- Notas ---
-
-  function saveCurrentNote() {
-    if (currentNote) {
-      currentNote.content = notesArea.value;
-    }
-  }
-
-  function addNote() {
-    saveCurrentNote();
-    const newNote = { id: Date.now(), title: `Nota ${notes.length + 1}`, content: '' };
-    notes.push(newNote);
-    currentNote = newNote;
-    renderNotesTabs();
-    showCurrentNote();
-  }
-
-  function selectNote(id) {
-    saveCurrentNote();
-    currentNote = notes.find(n => n.id === id);
-    showCurrentNote();
-  }
-
-  function showCurrentNote() {
-    if (!currentNote) {
-      notesArea.value = '';
-      return;
-    }
-    notesArea.value = currentNote.content;
-    updateNotesTabs();
-  }
-
-  function renderNotesTabs() {
-    notesTabs.innerHTML = '';
-    notes.forEach(note => {
-      const tab = document.createElement('div');
-      tab.className = 'noteTab' + (note.id === currentNote.id ? ' active' : '');
-      tab.textContent = note.title;
-      tab.onclick = () => selectNote(note.id);
-      notesTabs.appendChild(tab);
-    });
-  }
-
-  function updateNotesTabs() {
-    const tabs = notesTabs.children;
-    for (let i = 0; i < tabs.length; i++) {
-      const tab = tabs[i];
-      const note = notes[i];
-      if (note.id === currentNote.id) {
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const target = tab.dataset.tab;
+        tabs.forEach(t => t.classList.remove('active'));
+        notes.forEach(n => n.classList.remove('active'));
         tab.classList.add('active');
-      } else {
-        tab.classList.remove('active');
+        document.getElementById(target).classList.add('active');
+      });
+    });
+
+    // Sketch p5.js instanciado em modo instance para controle
+
+    let sketch = function(p) {
+      class Particle {
+        constructor(x, y) {
+          this.pos = p.createVector(x, y);
+          this.vel = p.createVector(p.random(-1, 1), p.random(-2, 0));
+          this.acc = p.createVector(0, 0);
+          this.lifespan = 255;
+        }
+        run() {
+          this.update();
+          this.display();
+        }
+        applyForce(force) {
+          this.acc.add(force);
+        }
+        update() {
+          this.vel.add(this.acc);
+          this.pos.add(this.vel);
+          this.acc.mult(0);
+          this.lifespan -= 4;
+        }
+        display() {
+          p.noStroke();
+          p.fill(127, this.lifespan);
+          p.ellipse(this.pos.x, this.pos.y, 12);
+        }
+        isDead() {
+          return this.lifespan < 0;
+        }
       }
-    }
-  }
 
-  notesArea.addEventListener('input', () => {
-    if (currentNote) {
-      currentNote.content = notesArea.value;
-    }
-  });
+      class Emitter {
+        constructor(x, y) {
+          this.origin = p.createVector(x, y);
+          this.particles = [];
+        }
+        addParticle() {
+          this.particles.push(new Particle(this.origin.x, this.origin.y));
+        }
+        run() {
+          for (let i = this.particles.length - 1; i >= 0; i--) {
+            this.particles[i].run();
+            if (this.particles[i].isDead()) {
+              this.particles.splice(i, 1);
+            }
+          }
+        }
+        applyForce(force) {
+          for (let particle of this.particles) {
+            particle.applyForce(force);
+          }
+        }
+      }
 
-  addNoteBtn.onclick = addNote;
+      class Repeller {
+        constructor(x, y) {
+          this.pos = p.createVector(x, y);
+          this.radius = 20;
+        }
+        show() {
+          p.stroke(255, 0, 0);
+          p.strokeWeight(2);
+          p.noFill();
+          p.ellipse(this.pos.x, this.pos.y, this.radius * 2);
+        }
+      }
 
-  // Inicializa com uma nota e com o sketch rodando
-  addNote();
-  runSketch();
+      let emitter;
+      let repeller;
+      let paused = false;
 
-</script>
+      p.setup = function() {
+        let canvas = p.createCanvas(700, 400);
+        canvas.parent('sketch-holder');
+        emitter = new Emitter(p.width / 2, 60);
+        repeller = new Repeller(p.width / 2, 160);
+        paused = false;
+      };
+
+      p.draw = function() {
+        if (!paused) {
+          p.background(255);
+          emitter.addParticle();
+          let gravity = p.createVector(0, 0.1);
+          emitter.applyForce(gravity);
+          emitter.run();
+          repeller.show();
+        }
+      };
+
+      p.startSketch = function() {
+        paused = false;
+        p.loop();
+      };
+
+      p.pauseSketch = function() {
+        paused = true;
+        p.noLoop();
+      };
+
+      p.resetSketch = function() {
+        emitter.particles = [];
+        paused = false;
+        p.loop();
+      };
+
+      // Expor para escopo global para controlar pelos botões
+      window.startSketch = p.startSketch;
+      window.pauseSketch = p.pauseSketch;
+      window.resetSketch = p.resetSketch;
+    };
+
+    new p5(sketch);
+  </script>
+
 </body>
 </html>
