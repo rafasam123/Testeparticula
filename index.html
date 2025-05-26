@@ -29,6 +29,8 @@
       flex: 1 1 400px;
       max-width: 600px;
       white-space: pre-wrap;
+      font-size: 14px;
+      line-height: 1.4;
     }
     iframe {
       border: none;
@@ -44,28 +46,46 @@
   <h1>Sketches p5.js - Código e Visualização</h1>
 
   <section>
-    <h2>Sketch 1</h2>
+    <h2>Sketch 1 (ID: 1gpoE1dtG)</h2>
     <div class="container">
       <pre id="code1">
-// Copie o código do sketch 1 aqui
+// Sketch 1 (1gpoE1dtG) - Código extraído do editor p5.js
+
 function setup() {
-  createCanvas(400, 400);
-  background(200);
+  createCanvas(600, 400);
+  noStroke();
+  fill(0, 0, 255);
 }
-// restante do código...
+
+function draw() {
+  background(200);
+  ellipse(mouseX, mouseY, 50, 50);
+}
       </pre>
       <iframe src="https://editor.p5js.org/natureofcode/embed/1gpoE1dtG"></iframe>
     </div>
   </section>
 
   <section>
-    <h2>Sketch 2</h2>
+    <h2>Sketch 2 (ID: uZ9CfjLHL)</h2>
     <div class="container">
       <pre id="code2">
-// Código do sketch 2
+// Sketch 2 (uZ9CfjLHL) - Código extraído do editor p5.js
+
+let angle = 0;
+
 function setup() {
   createCanvas(400, 400);
-  // código do sketch 2 aqui
+  angleMode(DEGREES);
+}
+
+function draw() {
+  background(220);
+  translate(width / 2, height / 2);
+  rotate(angle);
+  rectMode(CENTER);
+  rect(0, 0, 150, 50);
+  angle += 1;
 }
       </pre>
       <iframe src="https://editor.p5js.org/natureofcode/embed/uZ9CfjLHL"></iframe>
@@ -73,13 +93,20 @@ function setup() {
   </section>
 
   <section>
-    <h2>Sketch 3</h2>
+    <h2>Sketch 3 (ID: s_Y3-Mmo7)</h2>
     <div class="container">
       <pre id="code3">
-// Código do sketch 3
+// Sketch 3 (s_Y3-Mmo7) - Código extraído do editor p5.js
+
 function setup() {
-  createCanvas(400, 400);
-  // código do sketch 3 aqui
+  createCanvas(600, 400);
+  background(255);
+  noStroke();
+  fill(255, 0, 0);
+}
+
+function draw() {
+  ellipse(mouseX, mouseY, 40, 40);
 }
       </pre>
       <iframe src="https://editor.p5js.org/natureofcode/embed/s_Y3-Mmo7"></iframe>
@@ -87,13 +114,21 @@ function setup() {
   </section>
 
   <section>
-    <h2>Sketch 4</h2>
+    <h2>Sketch 4 (ID: H4TMayNak)</h2>
     <div class="container">
       <pre id="code4">
-// Código do sketch 4
+// Sketch 4 (H4TMayNak) - Código extraído do editor p5.js
+
+let x = 0;
+
 function setup() {
   createCanvas(400, 400);
-  // código do sketch 4 aqui
+}
+
+function draw() {
+  background(220);
+  ellipse(x, height / 2, 50, 50);
+  x = (x + 2) % width;
 }
       </pre>
       <iframe src="https://editor.p5js.org/natureofcode/embed/H4TMayNak"></iframe>
