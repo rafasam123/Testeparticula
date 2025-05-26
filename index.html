@@ -1,13 +1,40 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
   <head>
-    <title>Sketch p5.js</title>
+    <meta charset="UTF-8" />
+    <title>Sketch Interativo</title>
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
     <style>
-      body, html { margin: 0; padding: 0; height: 100%; }
-      iframe { width: 100%; height: 100%; border: none; }
+      body {
+        margin: 0;
+        font-family: sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background-color: #f0f0f0;
+      }
+      canvas {
+        border: 1px solid #ccc;
+        margin-top: 20px;
+      }
+      .controls {
+        margin-top: 10px;
+      }
+      button {
+        margin: 0 5px;
+        padding: 8px 16px;
+        font-size: 14px;
+        cursor: pointer;
+      }
     </style>
   </head>
   <body>
-    <iframe src="https://editor.p5js.org/natureofcode/sketches/-xTbGZMim"></iframe>
+    <h2>Sketch com Controles</h2>
+    <div class="controls">
+      <button onclick="startSketch()">▶️ Play</button>
+      <button onclick="pauseSketch()">⏸️ Pause</button>
+      <button onclick="resetSketch()">🔁 Reset</button>
+    </div>
+    <script src="sketch.js"></script>
   </body>
 </html>
