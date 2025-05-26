@@ -1,101 +1,176 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <title>Sketch com Notas e Controles</title>
-  <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
-  <style>
-    body {
-      margin: 0;
-      font-family: monospace, monospace;
-      background: #f0f0f0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 10px;
-    }
-
-    /* Abas */
-    .tabs {
-      display: flex;
-      margin-bottom: 10px;
-      cursor: pointer;
-      user-select: none;
-    }
-    .tab {
-      background: #ddd;
-      padding: 8px 16px;
-      border: 1px solid #aaa;
-      border-bottom: none;
-      margin-right: 3px;
-      border-radius: 5px 5px 0 0;
-      font-weight: bold;
-    }
-    .tab.active {
-      background: white;
-      border-bottom: 1px solid white;
-    }
-
-    /* Conteúdo das notas */
-    .note-content {
-      width: 90vw;
-      max-width: 1280px;
-      height: 250px;
-      border: 1px solid #aaa;
-      background: white;
-      overflow: auto;
-      padding: 10px;
-      white-space: pre-wrap;
-      font-size: 14px;
-      line-height: 1.3em;
-      display: none;
-    }
-    .note-content.active {
-      display: block;
-    }
-
-    /* Canvas e controles */
-    #sketch-holder {
-      border: 1px solid #aaa;
-      margin-top: 20px;
-      width: 700px;
-      height: 400px;
-      background: white;
-    }
-
-    .controls {
-      margin-top: 15px;
-    }
-    button {
-      margin: 0 5px;
-      padding: 8px 16px;
-      font-size: 14px;
-      cursor: pointer;
-      border-radius: 5px;
-      border: 1px solid #888;
-      background: #eee;
-      transition: background 0.3s;
-    }
-    button:hover {
-      background: #ddd;
-    }
-  </style>
+<meta charset="UTF-8" />
+<title>Mini Editor p5.js com Múltiplos Arquivos</title>
+<script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+<style>
+  body {
+    font-family: monospace;
+    margin: 0; padding: 0;
+    display: flex; flex-direction: column; height: 100vh;
+  }
+  #file-tabs {
+    display: flex;
+    background: #222;
+    color: white;
+  }
+  #file-tabs button {
+    background: #333;
+    border: none;
+    color: white;
+    padding: 10px 15px;
+    cursor: pointer;
+  }
+  #file-tabs button.active {
+    background: #f90;
+    color: black;
+  }
+  #editor {
+    flex-grow: 1;
+    width: 100%;
+  }
+  textarea {
+    width: 100%;
+    height: 100%;
+    font-family: monospace;
+    font-size: 14px;
+    padding: 10px;
+    box-sizing: border-box;
+    background: #222;
+    color: #eee;
+    border: none;
+    resize: none;
+  }
+  #bottom-panel {
+    display: flex;
+    height: 400px;
+    border-top: 2px solid #444;
+  }
+  #run-btn {
+    padding: 10px 15px;
+    margin-left: 10px;
+    cursor: pointer;
+  }
+  #sketch-container {
+    flex-grow: 1;
+    border-left: 2px solid #444;
+    background: #fff;
+    position: relative;
+  }
+  #sketch-canvas {
+    width: 100%;
+    height: 100%;
+  }
+</style>
 </head>
 <body>
 
-  <h2>Sketch p5.js com Notas e Controles</h2>
+<div id="file-tabs">
+  <button class="active" data-file="sketch1">sketch1.js</button>
+  <button data-file="sketch2">sketch2.js</button>
+  <button data-file="emitter">emitter.js</button>
+  <button id="add-file">➕ Add File</button>
+  <button id="run-btn">▶️ Run</button>
+</div>
 
-  <div class="tabs">
-    <div class="tab active" data-tab="note1">Nota 1</div>
-    <div class="tab" data-tab="note2">Nota 2</div>
-    <div class="tab" data-tab="note3">Nota 3</div>
-  </div>
+<div id="editor">
+  <textarea id="code-area" spellcheck="false"></textarea>
+</div>
 
-  <pre id="note1" class="note-content active">
-// The Nature of Code
-// Daniel Shiffman
-// http://natureofcode.com
+<div id="bottom-panel">
+  <div id="sketch-container"></div>
+</div>
 
+<script>
+  const tabsContainer = document.getElementById('file-tabs');
+  const codeArea = document.getElementById('code-area');
+  const sketchContainer = document.getElementById('sketch-container');
+  const runBtn = document.getElementById('run-btn');
+  const addFileBtn = document.getElementById('add-file');
+
+  // Código dos arquivos iniciais:
+  let files = {
+    'sketch1': `// sketch1.js
+function setup() {
+  createCanvas(400, 200);
+  background(240);
+}
+
+function draw() {
+  ellipse(frameCount % width, height/2, 50, 50);
+}
+`,
+    'sketch2': `// sketch2.js
+let emitter;
+
+function setup() {
+  createCanvas(640, 240);
+  emitter = new Emitter(width / 2, 60);
+}
+
+function draw() {
+  background(255);
+  emitter.addParticle();
+  let gravity = createVector(0, 0.1);
+  emitter.applyForce(gravity);
+  emitter.run();
+}
+
+class Particle {
+  constructor(x, y) {
+    this.pos = createVector(x, y);
+    this.vel = createVector(random(-1, 1), random(-2, 0));
+    this.acc = createVector(0, 0);
+    this.lifespan = 255;
+  }
+  run() {
+    this.update();
+    this.display();
+  }
+  applyForce(force) {
+    this.acc.add(force);
+  }
+  update() {
+    this.vel.add(this.acc);
+    this.pos.add(this.vel);
+    this.acc.mult(0);
+    this.lifespan -= 4;
+  }
+  display() {
+    noStroke();
+    fill(127, this.lifespan);
+    ellipse(this.pos.x, this.pos.y, 12);
+  }
+  isDead() {
+    return this.lifespan < 0;
+  }
+}
+
+class Emitter {
+  constructor(x, y) {
+    this.origin = createVector(x, y);
+    this.particles = [];
+  }
+  addParticle() {
+    this.particles.push(new Particle(this.origin.x, this.origin.y));
+  }
+  run() {
+    for (let i = this.particles.length - 1; i >= 0; i--) {
+      this.particles[i].run();
+      if (this.particles[i].isDead()) {
+        this.particles.splice(i, 1);
+      }
+    }
+  }
+  applyForce(force) {
+    for (let particle of this.particles) {
+      particle.applyForce(force);
+    }
+  }
+}
+`,
+    'emitter': `// emitter.js
 class Emitter {
   constructor(x, y) {
     this.origin = createVector(x, y);
@@ -107,227 +182,84 @@ class Emitter {
   }
 
   run() {
-    // Looping through backwards to delete
     for (let i = this.particles.length - 1; i >= 0; i--) {
       this.particles[i].run();
       if (this.particles[i].isDead()) {
-        // Remove the particle
         this.particles.splice(i, 1);
       }
     }
-
-    // Run every particle
-    // ES6 for..of loop
-    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of
-    // https://www.youtube.com/watch?v=Y8sMnRQYr3c
-    // for (let particle of this.particles) {
-    //   particle.run();
-    // }
-
-    // Filter removes any elements of the array that do not pass the test
-    // I am also using ES6 arrow snytax
-    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions
-    // https://www.youtube.com/watch?v=mrYMzpbFz18
-    // this.particles = this.particles.filter(particle => !particle.isDead());
-
-    // Without ES6 arrow code would look like:
-    // this.particles = this.particles.filter(function(particle) {
-    //   return !particle.isDead();
-    // });
   }
 }
-  </pre>
+`
+  };
 
-  <pre id="note2" class="note-content">
-// The Nature of Code
-// Daniel Shiffman
-// http://natureofcode.com
+  let currentFile = 'sketch1';
 
-let emitter;
+  // Inicializa editor com código do arquivo atual
+  function loadFile(filename) {
+    codeArea.value = files[filename] || '';
+  }
 
-function setup() {
-  createCanvas(1280, 480);
-  emitter = new Emitter(width / 3, 50);
-}
+  // Troca aba
+  tabsContainer.addEventListener('click', (e) => {
+    if (e.target.tagName === 'BUTTON' && e.target.dataset.file) {
+      // Salva conteúdo da aba atual
+      files[currentFile] = codeArea.value;
 
-function draw() {
-  background(255,30);
+      // Atualiza aba ativa
+      [...tabsContainer.querySelectorAll('button')].forEach(b => b.classList.remove('active'));
+      e.target.classList.add('active');
 
-  // Apply gravity force to all Particles
-  let gravity = createVector(0, 0.1);
-  emitter.applyForce(gravity);
+      currentFile = e.target.dataset.file;
+      loadFile(currentFile);
+    }
+  });
 
-  emitter.addParticle();
-  emitter.run();
-}
-  </pre>
+  // Adicionar novo arquivo
+  addFileBtn.onclick = () => {
+    const newFileName = prompt("Nome do novo arquivo (ex: 'novo.js'):");
+    if (newFileName && !files[newFileName]) {
+      files[newFileName] = `// ${newFileName}\n\n`;
+      const btn = document.createElement('button');
+      btn.textContent = newFileName;
+      btn.dataset.file = newFileName;
+      btn.classList.add('tab-button');
+      tabsContainer.insertBefore(btn, addFileBtn);
+      btn.click();
+    } else {
+      alert('Nome inválido ou arquivo já existe');
+    }
+  };
 
-  <pre id="note3" class="note-content">
-// One ParticleSystem
-let emitter;
+  loadFile(currentFile);
 
-//{!1} One repeller
-let repeller;
+  // Função para rodar o sketch no container
+  function runSketch() {
+    // Salvar código atual
+    files[currentFile] = codeArea.value;
 
-function setup() {
-  createCanvas(640 , 240);
-  emitter = new Emitter(width / 2, 60);
-  repeller = new Repeller(width / 2, 160);
-}
-
-function draw() {
-  background(255);
-  emitter.addParticle();
-  // We’re applying a universal gravity.
-  let gravity = createVector(0, 0.1);
-  emitter.applyForce(gravity);
-  //{!1} Applying the repeller
-  emitter.applyRepeller(repeller);
-  emitter.run();
-
-  repeller.show();
-}
-  </pre>
-
-  <div class="controls">
-    <button onclick="startSketch()">▶️ Play</button>
-    <button onclick="pauseSketch()">⏸️ Pause</button>
-    <button onclick="resetSketch()">🔁 Reset</button>
-  </div>
-
-  <div id="sketch-holder"></div>
-
-  <script>
-    // Controle das abas
-    const tabs = document.querySelectorAll('.tab');
-    const notes = document.querySelectorAll('.note-content');
-
-    tabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        const target = tab.dataset.tab;
-        tabs.forEach(t => t.classList.remove('active'));
-        notes.forEach(n => n.classList.remove('active'));
-        tab.classList.add('active');
-        document.getElementById(target).classList.add('active');
-      });
-    });
-
-    // Sketch p5.js instanciado em modo instance para controle
-
-    let sketch = function(p) {
-      class Particle {
-        constructor(x, y) {
-          this.pos = p.createVector(x, y);
-          this.vel = p.createVector(p.random(-1, 1), p.random(-2, 0));
-          this.acc = p.createVector(0, 0);
-          this.lifespan = 255;
-        }
-        run() {
-          this.update();
-          this.display();
-        }
-        applyForce(force) {
-          this.acc.add(force);
-        }
-        update() {
-          this.vel.add(this.acc);
-          this.pos.add(this.vel);
-          this.acc.mult(0);
-          this.lifespan -= 4;
-        }
-        display() {
-          p.noStroke();
-          p.fill(127, this.lifespan);
-          p.ellipse(this.pos.x, this.pos.y, 12);
-        }
-        isDead() {
-          return this.lifespan < 0;
-        }
-      }
-
-      class Emitter {
-        constructor(x, y) {
-          this.origin = p.createVector(x, y);
-          this.particles = [];
-        }
-        addParticle() {
-          this.particles.push(new Particle(this.origin.x, this.origin.y));
-        }
-        run() {
-          for (let i = this.particles.length - 1; i >= 0; i--) {
-            this.particles[i].run();
-            if (this.particles[i].isDead()) {
-              this.particles.splice(i, 1);
-            }
-          }
-        }
-        applyForce(force) {
-          for (let particle of this.particles) {
-            particle.applyForce(force);
-          }
-        }
-      }
-
-      class Repeller {
-        constructor(x, y) {
-          this.pos = p.createVector(x, y);
-          this.radius = 20;
-        }
-        show() {
-          p.stroke(255, 0, 0);
-          p.strokeWeight(2);
-          p.noFill();
-          p.ellipse(this.pos.x, this.pos.y, this.radius * 2);
-        }
-      }
-
-      let emitter;
-      let repeller;
-      let paused = false;
-
-      p.setup = function() {
-        let canvas = p.createCanvas(700, 400);
-        canvas.parent('sketch-holder');
-        emitter = new Emitter(p.width / 2, 60);
-        repeller = new Repeller(p.width / 2, 160);
-        paused = false;
+    // Montar script concatenando todos os arquivos na ordem (simples)
+    let fullCode = `
+      let sketch = function(p) {
+        ${Object.values(files).join('\n')}
       };
+      new p5(sketch, document.getElementById('sketch-container'));
+    `;
 
-      p.draw = function() {
-        if (!paused) {
-          p.background(255);
-          emitter.addParticle();
-          let gravity = p.createVector(0, 0.1);
-          emitter.applyForce(gravity);
-          emitter.run();
-          repeller.show();
-        }
-      };
+    // Remover sketch anterior para evitar conflito
+    sketchContainer.innerHTML = '';
 
-      p.startSketch = function() {
-        paused = false;
-        p.loop();
-      };
+    // Criar script e injetar
+    const script = document.createElement('script');
+    script.textContent = fullCode;
+    sketchContainer.appendChild(script);
+  }
 
-      p.pauseSketch = function() {
-        paused = true;
-        p.noLoop();
-      };
+  runBtn.onclick = runSketch;
 
-      p.resetSketch = function() {
-        emitter.particles = [];
-        paused = false;
-        p.loop();
-      };
-
-      // Expor para escopo global para controlar pelos botões
-      window.startSketch = p.startSketch;
-      window.pauseSketch = p.pauseSketch;
-      window.resetSketch = p.resetSketch;
-    };
-
-    new p5(sketch);
-  </script>
+  // Inicializa com o primeiro sketch rodando
+  runSketch();
+</script>
 
 </body>
 </html>
