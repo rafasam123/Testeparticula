@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8" />
-<title>Mini Editor p5.js com Múltiplos Arquivos</title>
+<title>Mini Editor p5.js - Executa só a aba ativa</title>
 <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
 <style>
   body {
@@ -58,9 +58,9 @@
     background: #fff;
     position: relative;
   }
-  #sketch-canvas {
-    width: 100%;
-    height: 100%;
+  #sketch-container > canvas {
+    width: 100% !important;
+    height: 100% !important;
   }
 </style>
 </head>
@@ -74,7 +74,7 @@
   <button id="run-btn">▶️ Run</button>
 </div>
 
-<div id="editor">
+<div id="editor" style="height: 300px;">
   <textarea id="code-area" spellcheck="false"></textarea>
 </div>
 
@@ -89,10 +89,9 @@
   const runBtn = document.getElementById('run-btn');
   const addFileBtn = document.getElementById('add-file');
 
-  // Código dos arquivos iniciais:
+  // Arquivos iniciais
   let files = {
-    'sketch1': `// sketch1.js
-function setup() {
+    'sketch1': `function setup() {
   createCanvas(400, 200);
   background(240);
 }
@@ -101,8 +100,7 @@ function draw() {
   ellipse(frameCount % width, height/2, 50, 50);
 }
 `,
-    'sketch2': `// sketch2.js
-let emitter;
+    'sketch2': `let emitter;
 
 function setup() {
   createCanvas(640, 240);
@@ -170,8 +168,7 @@ class Emitter {
   }
 }
 `,
-    'emitter': `// emitter.js
-class Emitter {
+    'emitter': `class Emitter {
   constructor(x, y) {
     this.origin = createVector(x, y);
     this.particles = [];
@@ -195,18 +192,18 @@ class Emitter {
 
   let currentFile = 'sketch1';
 
-  // Inicializa editor com código do arquivo atual
+  // Carregar código da aba ativa no editor
   function loadFile(filename) {
     codeArea.value = files[filename] || '';
   }
 
-  // Troca aba
-  tabsContainer.addEventListener('click', (e) => {
+  // Troca de aba
+  tabsContainer.addEventListener('click', e => {
     if (e.target.tagName === 'BUTTON' && e.target.dataset.file) {
-      // Salva conteúdo da aba atual
+      // Salvar código da aba atual
       files[currentFile] = codeArea.value;
 
-      // Atualiza aba ativa
+      // Ativar aba clicada
       [...tabsContainer.querySelectorAll('button')].forEach(b => b.classList.remove('active'));
       e.target.classList.add('active');
 
@@ -215,7 +212,7 @@ class Emitter {
     }
   });
 
-  // Adicionar novo arquivo
+  // Adicionar arquivo novo
   addFileBtn.onclick = () => {
     const newFileName = prompt("Nome do novo arquivo (ex: 'novo.js'):");
     if (newFileName && !files[newFileName]) {
@@ -223,7 +220,6 @@ class Emitter {
       const btn = document.createElement('button');
       btn.textContent = newFileName;
       btn.dataset.file = newFileName;
-      btn.classList.add('tab-button');
       tabsContainer.insertBefore(btn, addFileBtn);
       btn.click();
     } else {
@@ -233,32 +229,43 @@ class Emitter {
 
   loadFile(currentFile);
 
-  // Função para rodar o sketch no container
+  // Função para executar só o código da aba ativa
   function runSketch() {
-    // Salvar código atual
     files[currentFile] = codeArea.value;
 
-    // Montar script concatenando todos os arquivos na ordem (simples)
-    let fullCode = `
-      let sketch = function(p) {
-        ${Object.values(files).join('\n')}
-      };
-      new p5(sketch, document.getElementById('sketch-container'));
+    // Remove sketch anterior e p5 existente
+    sketchContainer.innerHTML = '';
+    if (window.p5instance) {
+      window.p5instance.remove();
+      window.p5instance = null;
+    }
+
+    // Define função sketch que será executada no contexto p5
+    let code = files[currentFile];
+
+    // Envolvendo o código do usuário numa função p5 sketch
+    let sketchCode = `
+      return function(p) {
+        ${code}
+      }
     `;
 
-    // Remover sketch anterior para evitar conflito
-    sketchContainer.innerHTML = '';
-
-    // Criar script e injetar
-    const script = document.createElement('script');
-    script.textContent = fullCode;
-    sketchContainer.appendChild(script);
+    try {
+      // Cria a função a partir do código
+      let sketchFunc = new Function(sketchCode)();
+      // Cria nova instância p5 com a função
+      window.p5instance = new p5(sketchFunc, sketchContainer);
+    } catch (e) {
+      alert('Erro ao executar o código:\n' + e.message);
+      console.error(e);
+    }
   }
 
   runBtn.onclick = runSketch;
 
-  // Inicializa com o primeiro sketch rodando
+  // Executa a primeira vez ao carregar
   runSketch();
+
 </script>
 
 </body>
