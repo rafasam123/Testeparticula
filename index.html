@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8" />
-  <title>Sketches p5.js com Código e Visualização</title>
+  <title>Sketches com Código e Visualização</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -46,15 +46,28 @@
   <section>
     <h2>Sketch 1</h2>
     <div class="container">
-      <pre id="code1">Carregando código...</pre>
-      <iframe src="https://editor.p5js.org/natureofcode/embed/s_Y3-Mmo7"></iframe>
+      <pre id="code1">
+// Copie o código do sketch 1 aqui
+function setup() {
+  createCanvas(400, 400);
+  background(200);
+}
+// restante do código...
+      </pre>
+      <iframe src="https://editor.p5js.org/natureofcode/embed/1gpoE1dtG"></iframe>
     </div>
   </section>
 
   <section>
     <h2>Sketch 2</h2>
     <div class="container">
-      <pre id="code2">Carregando código...</pre>
+      <pre id="code2">
+// Código do sketch 2
+function setup() {
+  createCanvas(400, 400);
+  // código do sketch 2 aqui
+}
+      </pre>
       <iframe src="https://editor.p5js.org/natureofcode/embed/uZ9CfjLHL"></iframe>
     </div>
   </section>
@@ -62,45 +75,30 @@
   <section>
     <h2>Sketch 3</h2>
     <div class="container">
-      <pre id="code3">Carregando código...</pre>
-      <iframe src="https://editor.p5js.org/natureofcode/embed/H4TMayNak"></iframe>
+      <pre id="code3">
+// Código do sketch 3
+function setup() {
+  createCanvas(400, 400);
+  // código do sketch 3 aqui
+}
+      </pre>
+      <iframe src="https://editor.p5js.org/natureofcode/embed/s_Y3-Mmo7"></iframe>
     </div>
   </section>
 
   <section>
     <h2>Sketch 4</h2>
     <div class="container">
-      <pre id="code4">Carregando código...</pre>
-      <iframe src="https://editor.p5js.org/natureofcode/embed/1gpoE1dtG"></iframe>
+      <pre id="code4">
+// Código do sketch 4
+function setup() {
+  createCanvas(400, 400);
+  // código do sketch 4 aqui
+}
+      </pre>
+      <iframe src="https://editor.p5js.org/natureofcode/embed/H4TMayNak"></iframe>
     </div>
   </section>
-
-<script>
-  // Função para carregar o código fonte do sketch via API pública do p5.js editor
-  async function loadCode(sketchId, preElementId) {
-    const url = `https://editor.p5js.org/api/sketches/${sketchId}`;
-    try {
-      const response = await fetch(url);
-      if(!response.ok) throw new Error("Não foi possível carregar o código");
-      const data = await response.json();
-      // O código geralmente está dentro de data.files como um array
-      const codeFiles = data.files;
-      let codeText = "";
-      for(const file of codeFiles){
-        codeText += `// Arquivo: ${file.name}\n${file.code}\n\n`;
-      }
-      document.getElementById(preElementId).textContent = codeText;
-    } catch(e) {
-      document.getElementById(preElementId).textContent = "Erro ao carregar o código.";
-    }
-  }
-
-  // IDs dos sketches conforme URL:
-  loadCode("s_Y3-Mmo7", "code1");
-  loadCode("uZ9CfjLHL", "code2");
-  loadCode("H4TMayNak", "code3");
-  loadCode("1gpoE1dtG", "code4");
-</script>
 
 </body>
 </html>
